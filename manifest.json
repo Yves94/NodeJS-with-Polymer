@@ -1,0 +1,6 @@
+{
+  "name": "quiz",
+  "short_name": "quiz",
+  "start_url": "/",
+  "display": "standalone"
+}

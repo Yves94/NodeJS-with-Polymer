@@ -1,0 +1,36 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="quiz-styles.html">
+
+<dom-module id="quiz-home">
+    <template>
+        <style include="quiz-styles"></style>
+
+        <h2>Home</h2>
+        <a href="/question">Question Link</a>
+
+        <form method="post" action="/login">
+            <label for="username">Username</label>
+            <input id="username" type="text" name="username">
+
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password">
+
+            <button type="submit">Log in</button>
+        </form>
+
+    </template>
+
+    <script>
+        class QuizHome extends Polymer.Element {
+            static get is() { return 'quiz-home'; }
+            
+            ready() {
+                super.ready();
+                console.log('Home ready.');
+            }
+            
+        }
+
+        window.customElements.define(QuizHome.is, QuizHome);
+    </script>
+</dom-module>

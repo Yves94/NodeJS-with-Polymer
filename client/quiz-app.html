@@ -1,0 +1,92 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="quiz-home.html">
+
+<dom-module id="quiz-app">
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
+
+            .title {
+                margin: 0;
+                padding: 25px;
+                background-color: #8b8b8b;
+                color: #fff;
+            }
+        </style>
+        
+        <!-- Routing -->
+        <app-location route="{{ route }}"></app-location>
+        <app-route route="{{ route }}" pattern="/:page" data="{{ routeData }}"></app-route>
+        
+        <!-- Layout -->
+        <h1 class="title">Layout</h1>
+
+        <!-- Pages -->
+        <iron-pages role="main" selected="[[ page ]]" attr-for-selected="name" fallback-selection="404">
+            <quiz-home name="home"></quiz-home>
+            <quiz-question name="question"></quiz-question>
+            <quiz-404 name="404"></quiz-404>
+        </iron-pages>
+        
+    </template>
+
+    <script>
+        class QuizApp extends Polymer.Element {
+            static get is() { return 'quiz-app'; }
+            static get properties() { return {
+                page: {
+                    type: String,
+                    observer: '_pageChanged'
+                },
+            }}
+
+            static get observers() { return [
+                '_routePageChanged(routeData.page)'
+            ]}
+
+            ready() {
+                super.ready();
+                console.log('App ready.');
+            }
+
+            _routePageChanged(page) {
+                let self = this;
+                let curr_page = page || 'home';
+
+                // Check page with backend
+                this._load('get', '/' + curr_page, null, function(res) {
+                    
+                    self.page = curr_page;
+                    
+                });
+            }
+
+            _pageChanged(page) {
+                Polymer.importHref(this.resolveUrl('quiz-' + page + '.html'), null, this._pageNotExist(), true);
+            }
+
+            _pageNotExist() {
+                Polymer.importHref(this.resolveUrl('quiz-404.html'), null, null, true);
+            }
+
+            _load(method, url, params, next) {
+                let xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function(e) {
+                    if (this.readyState == 4 && this.status == 200) {
+                        next(this);
+                    }
+                }
+                xhr.open(method, url, true);
+                xhr.setRequestHeader('Content-type', 'application/json');
+                xhr.send(params);
+            }
+        }
+
+        window.customElements.define(QuizApp.is, QuizApp);
+    </script>
+</dom-module>

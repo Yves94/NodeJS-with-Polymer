@@ -1,0 +1,9 @@
+{
+    "entrypoint": "index.html",
+    "shell": "client/quiz-app.html",
+    "sources": [
+        "bower_components/**/*",
+        "client/**/*",
+        "bower.json"
+      ]
+}
