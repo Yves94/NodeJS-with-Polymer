@@ -1,34 +1,76 @@
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="quiz-styles.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
 
 <dom-module id="quiz-home">
     <template>
         <style include="quiz-styles"></style>
 
+        <!-- Local Storage -->
+        <iron-localstorage name="user-storage" value="{{ storedUser }}"></iron-localstorage>
+
+        <!-- Ajax request -->
+        <iron-ajax id="registerLoginAjax" method="post" content-type="application/json" handle-as="text" on-response="handleUserResponse" on-error="handleUserError"></iron-ajax>
+
         <h2>Home</h2>
         <a href="/question">Question Link</a>
 
-        <form method="post" action="/login">
-            <label for="username">Username</label>
-            <input id="username" type="text" name="username">
+        <template is="dom-if" if="[[ !storedUser.loggedin ]]">
+            <div class="form">
+                <label for="username">Username</label>
+                <iron-input bind-value="{{ formData.username }}">
+                    <input id="username" type="text" value="{{ formData.username }}">
+                </iron-input>
 
-            <label for="password">Password</label>
-            <input id="password" type="password" name="password">
+                <label for="password">Password</label>
+                <iron-input bind-value="{{ formData.password }}">
+                    <input id="password" type="password" value="{{ formData.password }}">
+                </iron-input>
 
-            <button type="submit">Log in</button>
-        </form>
+                <button on-click="postLogin">Log in</button>
+            </div>
+        </template>
+
+        <template is="dom-if" if="[[ storedUser.loggedin ]]">
+            <div class="loggin-message">You are logged with <b>[[ storedUser.name ]]</b> profile</div>
+        </template>
 
     </template>
 
     <script>
         class QuizHome extends Polymer.Element {
             static get is() { return 'quiz-home'; }
-            
+            static get properties() { return {
+                storedUser: Object,
+                formData: {
+                    type: Object,
+                    value: {}
+                }
+            }}
+
             ready() {
                 super.ready();
                 console.log('Home ready.');
             }
             
+            postLogin() {
+                this.$.registerLoginAjax.url = 'http://localhost:3000/login';
+                this.$.registerLoginAjax.body = this.formData;
+                this.$.registerLoginAjax.generateRequest();
+            }
+
+            handleUserResponse(event) {
+                var response = JSON.parse(event.detail.response);
+                
+                if (response.token) {
+                    this.storedUser = {
+                        name: this.formData.username,
+                        token: response.token,
+                        loggedin: true
+                    }
+                }
+
+                this.formData = {};
+            }
         }
 
         window.customElements.define(QuizHome.is, QuizHome);

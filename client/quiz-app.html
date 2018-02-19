@@ -2,7 +2,9 @@
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="quiz-home.html">
+<link rel="import" href="quiz-styles.html">
 
 <dom-module id="quiz-app">
     <template>
@@ -22,6 +24,9 @@
         <!-- Routing -->
         <app-location route="{{ route }}"></app-location>
         <app-route route="{{ route }}" pattern="/:page" data="{{ routeData }}"></app-route>
+
+        <!-- Ajax request -->
+        <iron-ajax id="checkPageAjax" method="get" content-type="application/json" handle-as="text" on-response="handlePageResponse" on-error="handlePageError"></iron-ajax>
         
         <!-- Layout -->
         <h1 class="title">Layout</h1>
@@ -39,14 +44,12 @@
         class QuizApp extends Polymer.Element {
             static get is() { return 'quiz-app'; }
             static get properties() { return {
-                page: {
-                    type: String,
-                    observer: '_pageChanged'
-                },
+                page: String,
             }}
 
             static get observers() { return [
-                '_routePageChanged(routeData.page)'
+                '_routePageChanged(routeData.page)',
+                '_pageChanged(page)'
             ]}
 
             ready() {
@@ -55,18 +58,17 @@
             }
 
             _routePageChanged(page) {
-                let self = this;
-                let curr_page = page || 'home';
+                console.log('Route changed.');
+
+                var page = page || 'home';
 
                 // Check page with backend
-                this._load('get', '/' + curr_page, null, function(res) {
-                    
-                    self.page = curr_page;
-                    
-                });
+                this.$.checkPageAjax.url = 'http://localhost:3000/' + page;
+                this.$.checkPageAjax.generateRequest();
             }
 
             _pageChanged(page) {
+                console.log('Page changed.');
                 Polymer.importHref(this.resolveUrl('quiz-' + page + '.html'), null, this._pageNotExist(), true);
             }
 
@@ -74,16 +76,11 @@
                 Polymer.importHref(this.resolveUrl('quiz-404.html'), null, null, true);
             }
 
-            _load(method, url, params, next) {
-                let xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function(e) {
-                    if (this.readyState == 4 && this.status == 200) {
-                        next(this);
-                    }
-                }
-                xhr.open(method, url, true);
-                xhr.setRequestHeader('Content-type', 'application/json');
-                xhr.send(params);
+            handlePageResponse(event, request) {
+                console.log('Page response.');
+                var page = request.xhr.getResponseHeader('page');
+                page = page.split('/').filter(function(e){ return e }).join('-');
+                this.page = page;
             }
         }
 
