@@ -2,9 +2,13 @@
     <template>
         <style include="quiz-styles"></style>
 
+        <!-- Local Storage -->
+        <iron-localstorage name="user-storage" value="{{ storedUser }}"></iron-localstorage>
+
         <h2>Question</h2>
         <a href="/">Home Link</a>
-
+        
+        <div>Hello [[ storedUser.name ]]</div>
     </template>
 
     <script>

@@ -9,14 +9,12 @@ var app = express();
 app.use(express.static(__dirname + '/build/default'));
 
 // Check specific page
-app.get('/question', function (request, response) {
+app.get('/question', isLogin, function (request, response) {
     console.log('Question.');
-    response.sendFile('index.html', { root: '.', headers: { page: '404' } });
+    response.sendFile('index.html', { root: '.', headers: { page: request.originalUrl } });
 });
 
 app.post('/login', function(request, response) {
-    console.log('User want to login.');
-
     var token = jwt.sign({'sub': 'login', 'iss': 'Yves Legris', 'aud': 'admin'}, 'secret');
 
     response.json({
@@ -26,7 +24,6 @@ app.post('/login', function(request, response) {
 
 // Render index.html on the main page, specify the root
 app.get('*', function (request, response) {
-    console.log(request.originalUrl);
     response.sendFile('index.html', { root: '.', headers: { page: request.originalUrl } });
 });
 
@@ -34,3 +31,16 @@ app.get('*', function (request, response) {
 app.listen(3000, function () {
     console.log('Listening on port 3000');
 });
+
+// Middleware to check if user is connected
+function isLogin(request, response, next) {
+    console.log('Check Token.');
+
+    try {
+        var decoded = jwt.verify(request.header('authorization'), 'secret');
+        console.log(decoded);
+        next();
+    } catch(error) {
+        response.sendFile('index.html', { root: '.', headers: { page: '404' } });
+    }
+}

@@ -1,9 +1,9 @@
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/app-route/app-location.html">
 <link rel="import" href="../bower_components/app-route/app-route.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="quiz-home.html">
 <link rel="import" href="quiz-styles.html">
 
 <dom-module id="quiz-app">
@@ -20,6 +20,9 @@
                 color: #fff;
             }
         </style>
+
+        <!-- Local Storage -->
+        <iron-localstorage name="user-storage" value="{{ storedUser }}"></iron-localstorage>
         
         <!-- Routing -->
         <app-location route="{{ route }}"></app-location>
@@ -44,11 +47,11 @@
         class QuizApp extends Polymer.Element {
             static get is() { return 'quiz-app'; }
             static get properties() { return {
-                page: String,
+                page: String
             }}
 
             static get observers() { return [
-                '_routePageChanged(routeData.page)',
+                '_routePageChanged(routeData.page, storedUser)',
                 '_pageChanged(page)'
             ]}
 
@@ -57,13 +60,15 @@
                 console.log('App ready.');
             }
 
-            _routePageChanged(page) {
+            _routePageChanged(page, storedUser) {
                 console.log('Route changed.');
 
                 var page = page || 'home';
+                var token = storedUser ? storedUser.token : null;
 
                 // Check page with backend
                 this.$.checkPageAjax.url = 'http://localhost:3000/' + page;
+                this.$.checkPageAjax.headers['authorization'] =  String(token);
                 this.$.checkPageAjax.generateRequest();
             }
 
