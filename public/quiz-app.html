@@ -1,9 +1,9 @@
-<link rel="import" href="../bower_components/polymer/polymer-element.html">
-<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
-<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../bower_components/app-route/app-location.html">
-<link rel="import" href="../bower_components/app-route/app-route.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/polymer/polymer-element.html">
+<link rel="import" href="bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="bower_components/app-route/app-location.html">
+<link rel="import" href="bower_components/app-route/app-route.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="quiz-styles.html">
 
 <dom-module id="quiz-app">
@@ -47,7 +47,7 @@
         class QuizApp extends Polymer.Element {
             static get is() { return 'quiz-app'; }
             static get properties() { return {
-                page: String
+                page: String,
             }}
 
             static get observers() { return [
@@ -74,11 +74,7 @@
 
             _pageChanged(page) {
                 console.log('Page changed.');
-                Polymer.importHref(this.resolveUrl('quiz-' + page + '.html'), null, this._pageNotExist(), true);
-            }
-
-            _pageNotExist() {
-                Polymer.importHref(this.resolveUrl('quiz-404.html'), null, null, true);
+                Polymer.importHref(this.resolveUrl('quiz-' + page + '.html'), null, null, true);
             }
 
             handlePageResponse(event, request) {
