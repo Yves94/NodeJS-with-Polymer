@@ -12,16 +12,16 @@ app.use('/bower_components', express.static(__dirname + '/bower_components'));
 
 // Check specific page
 app.get('/question', isLogin, function (request, response) {
-    console.log('Question.');
     response.sendFile(config.appPath, { root: '.', headers: { page: request.originalUrl } });
 });
 
 app.post('/login', function(request, response) {
     var token = jwt.sign({'sub': 'login', 'iss': 'John Doe', 'aud': 'admin'}, config.secret);
+    response.json({ function: 'login', token: token });
+});
 
-    response.json({
-        token: token
-    });
+app.post('/logout', function (request, response) {
+    response.json({ function: 'logout', isLoggedout: true });
 });
 
 // Render index.html on the main page, specify the root

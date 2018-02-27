@@ -8,29 +8,32 @@
         <iron-localstorage name="user-storage" value="{{ storedUser }}"></iron-localstorage>
 
         <!-- Ajax request -->
-        <iron-ajax id="registerLoginAjax" method="post" content-type="application/json" handle-as="text" on-response="handleUserResponse" on-error="handleUserError"></iron-ajax>
-
+        <iron-ajax id="xhr" on-response="handleResponse"></iron-ajax>        
+        
         <h2>Home</h2>
         <a href="/question">Question Link</a>
 
+        <!-- Connection form -->
         <template is="dom-if" if="[[ !storedUser.loggedin ]]">
             <div class="form">
                 <label for="username">Username</label>
                 <iron-input bind-value="{{ formData.username }}">
-                    <input id="username" type="text" value="{{ formData.username }}">
+                    <input id="username" type="text" value="{{ formData.username }}" placeholder="Test">
                 </iron-input>
 
                 <label for="password">Password</label>
                 <iron-input bind-value="{{ formData.password }}">
-                    <input id="password" type="password" value="{{ formData.password }}">
+                    <input id="password" type="text" value="{{ formData.password }}" placeholder="Test">
                 </iron-input>
 
-                <button on-click="postLogin">Log in</button>
+                <button on-click="xhrRequest" data-url="login">Log in</button>
             </div>
         </template>
 
+        <!-- Disconnection button -->
         <template is="dom-if" if="[[ storedUser.loggedin ]]">
             <div class="loggin-message">You are logged with <b>[[ storedUser.name ]]</b> profile</div>
+            <button on-click="xhrRequest" data-url="logout">Logout</button>
         </template>
 
     </template>
@@ -48,16 +51,28 @@
             ready() {
                 super.ready();
                 console.log('Home ready.');
+
+                this.addEventListener('login', (e) => this.login(e));
+                this.addEventListener('logout', (e) => this.logout(e));
             }
             
-            postLogin() {
-                this.$.registerLoginAjax.url = 'http://localhost:3000/login';
-                this.$.registerLoginAjax.body = this.formData;
-                this.$.registerLoginAjax.generateRequest();
+            xhrRequest(event) {
+                var url = event.target.dataset.url;
+
+                this.$.xhr.url = 'http://localhost:3000/' + url;
+                this.$.xhr.method = 'POST';
+                this.$.xhr.contentType = 'application/json';
+                this.$.xhr.body = (url == 'login') ? this.formData : null;
+                this.$.xhr.generateRequest();
             }
 
-            handleUserResponse(event) {
-                var response = JSON.parse(event.detail.response);
+            handleResponse(event) {
+                var response = event.detail.response;
+                this.dispatchEvent(new CustomEvent(response.function, { detail: response }));
+            }
+
+            login(event) {
+                var response = event.detail;
                 if (response.token) {
                     this.storedUser = {
                         name: this.formData.username,
@@ -67,6 +82,11 @@
                 }
                 
                 this.formData = {};
+                location.reload();
+            }
+
+            logout(event) {
+                this.storedUser = null;
                 location.reload();
             }
         }
